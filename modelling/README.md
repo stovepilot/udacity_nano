@@ -1,19 +1,3 @@
-README: Please add the following sections and corresponding details in the README, this will help you write a wholesome and professional README.
-
-Project description: This should gives a gist of what is to be expected. :x:
-Database design: Describe the schema, you should lay down what are the tables (fact and dimension tables) clearly. Mention, the purpose for each of them. :x:
-ETL Process: This section describes the processing of the logs and creating different tables so that analytical queries can be run on them. It also describes, which directories have what kind of data and how are you extracting and transforming it. :x:
-Project Repository files: This section describes what files are for which purpose in the project :x:
-How To Run the Project: This describes the steps to run the project :white_check_mark:
-:x: -> indicates that these sections are not yet covered in the README.
-
-I would suggest using proper headings, emphasis, underline the relevant keywords. Use bullet points, add link URLs and images to make the README better.
-https://guides.github.com/features/mastering-markdown/
-
-OPTIONAL
-To make your project even more appealing on github, it would be great to put an ER diagram, which could help someone looking at the project get direct
-understanding into the database implemented. These small things matters during candidate selection. An example for you:
-
 # Sparkify ETL
 ## Project description 
 Learning project for Udacity DE Nanodegree.  The code will built a db in postgress and populate it by reading, wranging logfiles and importing the reulting dataframes into postgress.
