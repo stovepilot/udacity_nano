@@ -6,7 +6,9 @@
 # Code to read data and import it into postgres tables
 #
 # Version History
-# 0.1    2022-01-27    TB    Initial version
+# 0.1   2022-01-27  TB  Initial version
+# 0.2   2022-01-29  TB  Altered get_song_details by changing vairable refereence from song_plays
+#                       to song_detail_sql.  No functional change.
 #
 
 import os
@@ -188,7 +190,7 @@ def get_song_details(cur):
     Queries pg db for song details, populates a df and returns the df
     """   
 
-    cur.execute(song_select)
+    cur.execute(song_detail_sql)
     data=cur.fetchall()
     
     # From: https://www.linkedin.com/pulse/how-create-pandas-data-frame-postgresql-psycopg-vitor-spadotto

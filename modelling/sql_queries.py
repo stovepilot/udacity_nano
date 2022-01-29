@@ -1,3 +1,14 @@
+# 
+# Udacity Data Engineering Nanodegree 
+# Tom Baird
+# Jan 2022
+#
+# Code to read data and import it into postgres tables
+#
+# Version History
+# 0.1    2022-01-27    TB    Initial version
+# 0.2    2022-01-29    TB    Update to rename the song_select query to song_detail_sql and clarify the purpose of the query 
+
 # Fact Table
 # songplays - records in log data associated with song plays i.e. records with page NextSong
 # songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent
@@ -122,8 +133,9 @@ COPY time FROM '/home/workspace/tmp/tmp_data.csv'
 """)
 
 # FIND SONGS
-# find the song ID and artist ID based on the title, artist name, and duration of a song.
-song_select = ("""
+# for each song get song_id, artist_id, title, artist name, and duration
+# (this will allow a join with the log data on title, artist name, and duration)
+song_detail_sql = ("""
 select song_id, songs.artist_id, artists.name, songs.title, songs.duration
 FROM songs 
 INNER JOIN artists 
