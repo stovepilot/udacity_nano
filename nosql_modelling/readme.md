@@ -42,7 +42,7 @@ A select queery was run against the tables to check they worked.  Query 1 and 2 
 Run `python project_1b.py` _or_ open the jupyter-notebook and run that manually.
 
 ## Assoc files
-- The event_data folder contains the source data files.
+- The event_data folder contains the source data files (not uploaded to the repo).
 - The dev folder contains the ipynb used during development.
 - The image folder contains images used in the readme.
 
