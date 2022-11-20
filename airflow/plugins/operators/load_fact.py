@@ -29,19 +29,19 @@ class LoadFactOperator(BaseOperator):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         
         sql_insert = f"""
-            INSERT INTO {self.table}
+            INSERT INTO {self.table_name}
             {self.sql_select}
         """        
         
-        if self.append_data == True:
+        if self.append == True:
             
-            self.log.info('Appending data')
+            self.log.info(f'Appending data to fact table {self.table_name}')
 
             redshift.run(sql_insert)
 
         else:
 
-            self.log.info('Truncating and re-inserting data')
+            self.log.info(f'Truncating and re-inserting data into fact table {self.table_name}.')
             
             sql_delete = "DELETE FROM {}".format(self.table_name)
 
