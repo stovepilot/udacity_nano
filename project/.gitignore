@@ -5,3 +5,4 @@
 *.credentials
 **/.ipynb_checkpoints/
 .git_pw
+**/data
