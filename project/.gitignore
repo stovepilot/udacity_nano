@@ -6,3 +6,4 @@
 **/.ipynb_checkpoints/
 .git_pw
 **/data
+**/__pycache__
