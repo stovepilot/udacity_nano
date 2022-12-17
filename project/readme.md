@@ -61,7 +61,7 @@ A star schema is used for the database with the immigration data held in the fac
 See [here](https://review.udacity.com/#!/reviews/3391170)
 
 #### Data Dictionary
-
+See the data dicitonary [here](https://github.com/stovepilot/udacity_nano/new/capstone/project#data-dictionary)
 
 ## Data Wrangling
 ### Immigration Data
