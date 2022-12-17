@@ -5,11 +5,34 @@
 ----
 ## Rationale
 
-Ingest of I94 immigration data to a set of tables in a Redshift database for analytical purposes.  The (imaginary) use case requires the user to be able to analyse immigration data on an adhoc basis - with a focus on particular ports of entry.  It is envisaged that the users will interact withte data using the 
+Ingest of I94 immigration data to a set of tables in a Redshift database for analytical purposes.  The (imaginary) use case requires the user to be able to analyse immigration data on an adhoc basis - with a focus on particular ports of entry.  It is envisaged that the users will interact with the data using Redshift.
 
 ## Approach
 
-A combination of Spark and SQL was use for this project; the data is staged on S3 and stored in a Reshift database.
+A combination of Spark and SQL was use for this project; the data is staged on S3 and stored in a Redshift database.
+
+- I chose to use pySpark as Spark allows scalablility - at present the Spark code runs locally but should we we wish to scale this up Spark is very well suited.
+- I chose SQL for the DB work as it is the simplest tool for the job and is well understood allowing for maintainability.
+- I chose S3 as it was the only viable option for cheap, scalable cloud storage in the environment I was working in.
+- I chose Redshift as it provides a scalable relational database which is ideal for he user case I have in mind - ad-hoc queries for analytical work
+
+### Other scenarios
+
+#### Data increased by 100x
+In this case the follwiing steps could be taken
+- Create an EMR envoronment and run the spark code in the cloud
+- Save the cleaned data directly to S3
+- Increase the size of the Redshift cluster
+- Optimise the database of for the most commonly run queries (possibly using a nosql environment such as Cassandra)
+
+#### Pipelines run at 7am daily
+In this case the code could be scheduled in an Airtlof job, it was written with this in mind and would not need significant rework.
+
+#### The database needs to be accessed by 100+ people
+Redshift should be able to handle this but the following steps could be taken
+- Increase the size of the Redshift cluster
+- Optimise the database of for the most commonly run queries (possibly using a nosql environment such as Cassandra)
+- If numbers grew further we could implement [Amazon Redshift Concurrency Scaling](https://aws.amazon.com/redshift/features/concurrency-scaling/)
 
 ## Data Exploration
 See detail in the ata Cleaning section below
@@ -33,6 +56,13 @@ The data is uploaded from the local filesystem to the S3 bucket to using Spark.
 
 A star schema is used for the database with the immigration data held in the fact table and various dimension tables  joined to it via foreign keys.
 
+#### ER diagram
+
+See [here](https://review.udacity.com/#!/reviews/3391170)
+
+#### Data Dictionary
+
+
 ## Data Wrangling
 ### Immigration Data
 #### Null values
@@ -46,7 +76,6 @@ Four additional features are present in the June data.  These were all NULL so t
 
 ### Airport data
 The most obvious source of the airport data is the airport_codes_cvs.csv file.  However, though the data is of good quality investigations showed that it is incomplete.  On that basis the SAS label file was used.
-
 
 ## Code
 
@@ -76,12 +105,36 @@ The sql called by the fucntions on etl.py
 The followling code is designed to be called by the user to perform the various tasks (and could indeed be called from a tool like airflow).
 
 #### main.py
+`> python main.py`
+
+Runs through all the steps
+- Clean
+- Save locally
+- Upload to S3
+- Create database
+- Ingest data
 
 #### start_cluster.py
+`> python start_cluster.py`
+
+Starts the cluster
+- If a saved snapshot exists 
+    - resuming from a saved snapshot 
+- If no snapshot exists
+    - creating a new cluster
+    - running the DDL to build an empty DB
+    - Ingesting the data from S3
 
 #### pause_cluster.py
+`> python start_cluster.py`
+
+Stops the cluster and saves a snapshot of the database
 
 #### delete_cluster.py
+`> python delete_cluster.py`
+
+Stops the cluster without saving a snapshot
+
 
 
 ## test.py
@@ -90,4 +143,5 @@ The followling code is designed to be called by the user to perform the various 
 ## sample_queries
 
 #### sample_queries.sql
+
 
