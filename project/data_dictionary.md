@@ -1,5 +1,6 @@
 # Data dictionary
-## I94 data
+
+## i94_data
 Feature|Description
 ---|---
 CICID| unique numer of the file
@@ -28,3 +29,35 @@ AIRLINE| airline used to arrive in USA
 ADMNUM| admission Number
 FLTNO| flight number of Airline used to arrive in USA
 VISATYPE| class of admission legally admitting the non-immigrant to temporarily stay in USA
+
+## modes
+Field|Datatype|Description
+---|---|---
+i94_mode_id |INT|The arrival mode ID held in the I94 data
+mode|VARCHAR(50)| The mode of arrival
+
+## ports
+Field|Datatype|Description
+---|---|---
+i94_port_id| char(3)| Unique ID
+city_state|varchar(100)| The city and state of the port
+city|varchar(50)| City
+state|varchar(50)| State
+
+## states
+Field|Datatype|Description
+---|---|---
+state_code| char(2)| Unique id
+state |varchar(100)|State
+
+## countries
+Field|Datatype|Description
+---|---|---
+i94_res_id| INT | Unique ID
+country|varchar(50)| Country where the applicant is living
+
+## visas
+Field|Datatype|Description
+---|---|---
+i94_visa_id| integer| unique id
+visa_type| varchar(100)|class of admission legally admitting the non-immigrant to temporarily stay in USA
