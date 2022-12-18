@@ -5,7 +5,7 @@
 - [ ] The ETL processes result in the data model outlined in the write-up.
 - [x] A data dictionary for the final data model is included.
 - [ ] The project includes at least two data quality checks
-- [ ] Function headers
+- [x] Function headers
 - [x] TL/DR
 
 ## TL/DR - just get me started
