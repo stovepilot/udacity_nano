@@ -63,9 +63,10 @@ def create_iam_role(iam):
                    'Effect': 'Allow',
                    'Principal': {'Service': 'rexdshift.amazonaws.com'}}],
                  'Version': '2012-10-17'})
-        )    
+        )
     except Exception as e:
-        print(e)
+        if type(e).__name__ != 'EntityAlreadyExistsException':
+            print(f'Error {type(e).__name__}')
 
     print("1.2 Attaching Policy")
 
@@ -126,19 +127,16 @@ def pause_cluster(redshift):
     """
     print(f'Pausing cluster {DB_CLUSTER_IDENTIFIER}')
     print(f'Deleting old snapshot ({DB_SNAPSHOT_IDENTIFIER})')
+    
     try:
         delete_snapshots(redshift, DB_SNAPSHOT_IDENTIFIER)
         print(f'Deleting cluster {DB_CLUSTER_IDENTIFIER} while retaining snapshot ({DB_SNAPSHOT_IDENTIFIER})')
         redshift.delete_cluster( ClusterIdentifier=DB_CLUSTER_IDENTIFIER,  SkipFinalClusterSnapshot=False, FinalClusterSnapshotIdentifier=DB_SNAPSHOT_IDENTIFIER)
         wait_for_cluster(redshift, 'deleted')
         print(f'Cluster deleted with snapshot {DB_SNAPSHOT_IDENTIFIER} retained.')
+    
     except Exception as e:
         print(e)
-    
-
-
-# In[33]:
-
 
 def resume_cluster(redshift, roleArn):
     """
@@ -156,7 +154,22 @@ def resume_cluster(redshift, roleArn):
 
 # In[206]:
 
-
+def delete_snapshot(redshift, snapshot_identifier):
+    try:
+        redshift.delete_cluster_snapshot(SnapshotIdentifier=snapshot_identifier)
+        
+        return 'DELETED'
+        
+    except Exception as e:
+        if type(e).__name__ == 'InvalidClusterSnapshotStateFault':
+        
+            return 'WAIT'
+        
+        else:
+            
+            return e
+        
+        
 def delete_snapshots(redshift, snapshot_identifier=None):
     """
     Takes a boto3 redshift client object and, optionally, a snapshot_id 
@@ -167,6 +180,8 @@ def delete_snapshots(redshift, snapshot_identifier=None):
     Usage:
     delete_snapshots(<redshift_client>, [snapshot_identifier=None])
     """
+    delete_status =''
+    
     count_snapshots=len(redshift.describe_cluster_snapshots(ClusterIdentifier=DB_CLUSTER_IDENTIFIER)['Snapshots'])
     if count_snapshots > 0:
         print(f"Found {count_snapshots} snapshot(s):")
@@ -174,7 +189,18 @@ def delete_snapshots(redshift, snapshot_identifier=None):
             if snapshot_identifier != None:
                 if check_for_snapshot(redshift):
                     print(f'Deleting snapshot {snapshot_identifier}')
-                    redshift.delete_cluster_snapshot(SnapshotIdentifier=snapshot_identifier)
+                    while delete_status != 'DELETED':
+                        
+                        delete_status = delete_snapshot(redshift, snapshot_identifier)
+                        if delete_status == 'DELETED':
+                            print(f'Snapshot {snapshot_identifier} deleted')
+                        elif delete_status == 'WAIT':
+                            print(f'Snapshot {snapshot_identifier} in use - waiting')
+                            time.sleep(10)
+                        else:
+                            # Error
+                            print(delete_status)
+                        
                 else:
                     print(f'Snapshot {snapshot_identifier} not present - continuing')
             else:
@@ -182,14 +208,26 @@ def delete_snapshots(redshift, snapshot_identifier=None):
                 for snapshot in redshift.describe_cluster_snapshots(ClusterIdentifier=DB_CLUSTER_IDENTIFIER)['Snapshots']:
                     if snapshot['SnapshotType']=='manual':
                         print(f"Deleting snapshot {snapshot['SnapshotIdentifier']}")
-                        redshift.delete_cluster_snapshot(SnapshotIdentifier=snapshot['SnapshotIdentifier'])
+                        while delete_status != 'DELETED':                      
+                            delete_status = delete_snapshot(redshift, snapshot['SnapshotIdentifier'])
+                            if delete_status == 'DELETED':
+                                print(f"Snapshot {snapshot['SnapshotIdentifier']} deleted")
+                            elif delete_status == 'WAIT':
+                                print(f"Snapshot {snapshot['SnapshotIdentifier']} in use - waiting")
+                                time.sleep(10)
+                            else:
+                                # Error
+                                print(delete_status)
+                        
                     elif snapshot['SnapshotType']=='automated':
                         print(f"Automated snapshot {snapshot['SnapshotIdentifier']} cannot be manually deleted but will be droped after {DB_SNAPSHOT_RETENTION} day retention period")
                     else:
                         print(f"Found unknown snapshot {snapshot['SnapshotIdentifier']} - taking no action")
         except Exception as e:
             print(e)
+#            print(f'Error {type(e).__name__}')
 
+            
 def delete_cluster(redshift):
     """
     Deletes the cluster and any manually created snapshots
@@ -197,10 +235,21 @@ def delete_cluster(redshift):
     Usage:
     delete_cluster(<redshift_client>)
     """
-    print(f'Deleting {DB_CLUSTER_IDENTIFIER}')
-    redshift.delete_cluster( ClusterIdentifier=DB_CLUSTER_IDENTIFIER,  SkipFinalClusterSnapshot=True)
-    wait_for_cluster(redshift, 'deleted')
-    delete_snapshots(redshift)
+    try:
+        print(f'Deleting {DB_CLUSTER_IDENTIFIER}')
+        redshift.delete_cluster( ClusterIdentifier=DB_CLUSTER_IDENTIFIER,  SkipFinalClusterSnapshot=True)
+        wait_for_cluster(redshift, 'deleted')
+        delete_snapshots(redshift)
+    
+    except Exception as e:
+        
+        if type(e).__name__ == 'ClusterNotFoundFault':
+            
+            print('Cluster {DB_CLUSTER_IDENTIFIER} does not exist')
+            
+        else:
+            
+            print(e)
 
 def wait_for_cluster(redshift, desired_status):
     """
@@ -217,17 +266,21 @@ def wait_for_cluster(redshift, desired_status):
             time.sleep(10)
             i += 1
 
-            if i > 30:
-        #       Error
-                print(f'Error - cluster not {desired_status} after 5 minutes')
-                exit(1)
+#             if i > 30:
+#         #       Error
+#                 print(f'Error - cluster not {desired_status} after 5 minutes')
+#                 exit(1)
 
         # TODO - handle error better    
         print(f'Cluster {desired_status}')
         
     except Exception as e:
-        print(e)      
-        
+        if type(e).__name__ == 'ClusterNotFoundFault':
+            if desired_status == 'deleted':
+                print(f'Cluster {DB_CLUSTER_IDENTIFIER} deleted')      
+        else:
+            print(f'ErrorName= {type(e).__name__}')
+            
 def prettyRedshiftProps(props):
     """
     Formats redshift properties

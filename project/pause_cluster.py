@@ -71,5 +71,4 @@ redshift = boto3.client('redshift',
 roleArn=create_iam_role(iam)
 print(roleArn)
 
-
 pause_cluster(redshift)

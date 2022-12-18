@@ -120,12 +120,19 @@ def clean_immigration_fact_data(spark, path_to_files, output_path):
 
         # Drop a set of columns which only appear in the jun file and always contain 0
         df_I94 = df_I94.drop('delete_days','delete_dup', 'delete_mexl','delete_visa','delete_recdup','validres')
+        
+        # A couple of simple DQ checks
+        try:
+            assert df_I94.count() > 0, 'No rows found'
+            assert len(df_I94.columns) == 28, f'26 columns expected but {len(df_I94.columns)} columns found'
+        
+        except AssertionError as msg:
+            sys.exit(msg)
+            
+
         output_imm_data(df_I94, output_path)
         
-#         i = i + 1
-#         if i > 2:
-#             break
-        
+
 def output_imm_data(df_imm_data, output_path):
     """
         Outputs the cleaned immigration data

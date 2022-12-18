@@ -79,27 +79,27 @@ spark.conf.set('spark.sql.sources.partitionOverwriteMode', 'dynamic')
 
 # Clean the immigration data
 ### !!!
-# clean_immigration_fact_data(spark, I94_DATASET_PATH,'{}imm'.format(CLEAN_DATA_DIR))
+clean_immigration_fact_data(spark, I94_DATASET_PATH,'{}imm'.format(CLEAN_DATA_DIR))
 
 # Clean the dimension data
 print("Reading dimension data from {I94_LABELS} for cleaning")
 
-# df_labels = read_i94_dimension_data(spark, I94_LABELS)
+df_labels = read_i94_dimension_data(spark, I94_LABELS)
 
-# df_I94PORT = extract_airport_codes(df_labels)
-# write_dimension_data(df_I94PORT,'{}dim'.format(CLEAN_DATA_DIR),'I94PORT.csv')
+df_I94PORT = extract_airport_codes(df_labels)
+write_dimension_data(df_I94PORT,'{}dim'.format(CLEAN_DATA_DIR),'I94PORT.csv')
 
-# df_I94RES = extract_country_codes(df_labels)
-# write_dimension_data(df_I94RES,'{}dim'.format(CLEAN_DATA_DIR),'I94RES.csv')
+df_I94RES = extract_country_codes(df_labels)
+write_dimension_data(df_I94RES,'{}dim'.format(CLEAN_DATA_DIR),'I94RES.csv')
 
-# df_I94ADDR = extract_state_codes(df_labels)
-# write_dimension_data(df_I94ADDR,'{}dim'.format(CLEAN_DATA_DIR),'I94ADDR.csv')
+df_I94ADDR = extract_state_codes(df_labels)
+write_dimension_data(df_I94ADDR,'{}dim'.format(CLEAN_DATA_DIR),'I94ADDR.csv')
 
-# df_I94VISA = build_visa_data(spark)
-# write_dimension_data(df_I94VISA,'{}dim'.format(CLEAN_DATA_DIR),'I94VISA.csv')
+df_I94VISA = build_visa_data(spark)
+write_dimension_data(df_I94VISA,'{}dim'.format(CLEAN_DATA_DIR),'I94VISA.csv')
 
-# df_I94MODE = build_mode_data(spark)
-# write_dimension_data(df_I94MODE,'{}dim'.format(CLEAN_DATA_DIR),'I94MODE.csv')
+df_I94MODE = build_mode_data(spark)
+write_dimension_data(df_I94MODE,'{}dim'.format(CLEAN_DATA_DIR),'I94MODE.csv')
 
 ##########################################################################################
 print('Setting up S3 bucket {S3_BUCKET}')
@@ -117,10 +117,10 @@ s3_client = boto3.client('s3',
 
 create_bucket(s3)
 
-print("Uploading cleaned data to {S3_BUCKET}\{S3_FOLDER}\n")
+print(f"Uploading cleaned data to {S3_BUCKET}\{S3_FOLDER}\n")
 
 ###!!!!
-# upload_to_s3(s3, LOCAL_FILEPATH, S3_BUCKET, S3_FOLDER)
+upload_to_s3(s3, LOCAL_FILEPATH, S3_BUCKET, S3_FOLDER)
 
 ##########################################################################################
 print("Creating clients for IAM, EC2 and Redshift")
