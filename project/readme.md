@@ -1,13 +1,5 @@
 # Capstone Project
 
-## TODO
-- [ ] The code should run without errors.
-- [ ] The ETL processes result in the data model outlined in the write-up.
-- [x] A data dictionary for the final data model is included.
-- [ ] The project includes at least two data quality checks
-- [x] Function headers
-- [x] TL/DR
-
 ## TL/DR - just get me started
 
 ### Initial run
@@ -171,14 +163,4 @@ Stops the cluster and saves a snapshot of the database
 `> python delete_cluster.py`
 
 Stops the cluster without saving a snapshot
-
-
-
-## test.py
-### unit tests
-
-## sample_queries
-
-#### sample_queries.sql
-
 
