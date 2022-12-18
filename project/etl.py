@@ -1,75 +1,99 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-from time import time
 import configparser
-import matplotlib.pyplot as plt
-import pandas as pd
-import configparser
-import psycopg2
-import boto3
-from sql_queries import *
+import sql_queries
 
+
+# Read configuration
 config = configparser.ConfigParser()
-config.read_file(open('/home/workspace/dwh.cfg'))
-KEY                    = config.get('AWS','KEY')
-SECRET                 = config.get('AWS','SECRET')
+config.read_file(open('aws.cfg'))
 
-DB_CLUSTER_IDENTIFIER  = config.get("CLUSTER","DB_CLUSTER_IDENTIFIER")
+DB_CLUSTER_TYPE        = config.get("CLUSTER","DB_CLUSTER_TYPE")
+DB_NUM_NODES           = config.get("CLUSTER","DB_NUM_NODES")
+DB_NODE_TYPE           = config.get("CLUSTER","DB_NODE_TYPE")
+
 DB_NAME                = config.get("CLUSTER","DB_NAME")
 DB_USER                = config.get("CLUSTER","DB_USER")
-DB_PASSWORD         = config.get("CLUSTER","DB_PASSWORD")
+DB_PASSWORD            = config.get("CLUSTER","DB_PASSWORD")
 DB_PORT                = config.get("CLUSTER","DB_PORT")
 
-redshift = boto3.client('redshift',
-                       region_name="us-west-2",
-                       aws_access_key_id=KEY,
-                       aws_secret_access_key=SECRET
-                       )
+DB_CLUSTER_IDENTIFIER  = config.get("CLUSTER","DB_CLUSTER_IDENTIFIER")
+DB_SNAPSHOT_IDENTIFIER = config.get("CLUSTER","DB_SNAPSHOT_IDENTIFIER")
+DB_SNAPSHOT_RETENTION  = config.get("CLUSTER","DB_SNAPSHOT_RETENTION")
 
-myClusterProps = redshift.describe_clusters(ClusterIdentifier=DB_CLUSTER_IDENTIFIER)['Clusters'][0]
+IAM_ROLE_NAME          = config.get("IAM_ROLE", "IAM_ROLE_NAME")
+ARN                    = config.get("IAM_ROLE", "ARN")
 
-DB_ENDPOINT = myClusterProps['Endpoint']['Address']
-DB_ROLE_ARN = myClusterProps['IamRoles'][0]['IamRoleArn']
+S3_BUCKET              = config.get("S3", "S3_BUCKET")
+S3_FOLDER              = config.get("S3", "S3_FOLDER")
 
-def copy_tables(cur, conn):
+I94_DATASET_PATH       = config.get("LOCAL_DATA", "I94_DATASET_PATH")
+CLEAN_DATA_DIR         = config.get("LOCAL_DATA", "CLEAN_DATA_DIR")
+LOCAL_FILEPATH         = config.get("LOCAL_DATA", "LOCAL_FILEPATH")
+I94_LABELS             = config.get("LOCAL_DATA", "I94_LABELS")
+
+#######################################################################
+
+
+    
+def create_database(cur, conn, db_role_arn):
     """
-    - Copies data into the staging tables
+    Runs the functions to create and populate the database
+    
+    Usage:
+    create_database(<cursor>, <connection>, <db_role_arn>)
     """
-    for query in copy_table_queries:
-        cur.execute(query.format(DB_ROLE_ARN))
+
+    # Run queries to create and populate db
+    create_tables(cur, conn, db_role_arn)
+    copy_to_dim(cur, conn, db_role_arn)
+    copy_to_fact(cur, conn, db_role_arn)
+
+def create_tables(cur, conn, dbRoleArn):
+    """
+    Runs the SQL to create the database
+    
+    Usage:
+    create_tables(<cursor>, <connection>, <db_role_arn>)
+    """
+    print('Creating tables')
+    for query in sql_queries.create_table_queries:
+        cur.execute(query.format(dbRoleArn))
         conn.commit()
 
-def insert_tables(cur, conn):
+def copy_to_dim(cur, conn, dbRoleArn):
     """
-    - Inserts data from the staging tales into the analytics tables
+    Runs the SQL to ingest the dimension data
+    
+    Usage:
+    copy_to_dim(<cursor>, <connection>, <db_role_arn>)
     """
-    for query in insert_table_queries:
-        cur.execute(query)
-        conn.commit()
+    print('Populating dimension tables')
+    for query in sql_queries.copy_to_dim_queries:
+        print(query.format(dbRoleArn))
+        cur.execute(query.format(dbRoleArn))
+        conn.commit()     
 
-def check_tables(cur, conn):
+def copy_to_fact(cur, conn, dbRoleArn):
     """
-    - runs a quick check on the warehouse
+    Runs the SQL to ingest the fact data
+    
+    Usage:
+    copy_to_fact(<cursor>, <connection>, <db_role_arn>)
     """
-    for query in check_table_queries:
-        cur.execute(query)
-        conn.commit()
-        print(list(cur))
+    print('Populating fact tables')
+    for query in sql_queries.copy_to_fact_queries:
+        print(query.format(dbRoleArn))
+        cur.execute(query.format(dbRoleArn))
+        conn.commit()    
 
-conn = psycopg2.connect("host={} dbname={} user={} password={} port={}"
-                        .format(DB_ENDPOINT, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT))
-
-cur = conn.cursor()
-
-print('Starting data import to staging tables (this may take several minutes)')
-copy_tables(cur, conn)
-print ('Data staged')
-print('Starting insert')
-insert_tables(cur, conn)
-print ('Data inserted into warehouse')
-print('Checking songplay table contents')
-print('Rows, Songplays, Artists, Songs, Users')
-check_tables(cur, conn)
-
-conn.close()
+def drop_tables(cur, conn, dbRoleArn):
+    """
+    Runs the SQL to drop the tables
+    
+    Usage:
+    drop_tables(<cursor>, <connection>, <db_role_arn>)
+    """
+    print('Dropping tables')
+    for query in sql_queries.drop_dim_table_queries:
+        print(query.format(dbRoleArn))
+        cur.execute(query.format(dbRoleArn))
+        conn.commit()  
