@@ -87,7 +87,7 @@ A star schema is used for the database with the immigration data held in the fac
 
 #### ER diagram
 
-See [here](https://review.udacity.com/#!/reviews/3391170)
+![](./capstone_erd.png)
 
 #### Data Dictionary
 See the data dicitonary [here](https://github.com/stovepilot/udacity_nano/blob/capstone/project/data_dictionary.md#data-dictionary)
