@@ -106,6 +106,10 @@ Four additional features are present in the June data.  These were all NULL so t
 ### Airport data
 The most obvious source of the airport data is the airport_codes_cvs.csv file.  However, though the data is of good quality investigations showed that it is incomplete.  On that basis the SAS label file was used.
 
+## DQ
+
+I have included two data quailty checks.  Thsi first compares the number of parquet files on the local system with the number uploaded and checks that they match.  The second checks the row counts from the raw data against the fact table in redshift.
+
 ## Code
 
 #### aws.cfg
