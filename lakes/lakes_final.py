@@ -148,8 +148,10 @@ def process_data(spark):
             song_id,
             artist_id,
             sessionid,
-        location,
-        userAgent
+            location,
+            userAgent,
+            se.year,
+            se.month
     FROM staging_events se
     INNER JOIN (    
         SELECT song_id, songs.artist_id, artists.name, songs.title, songs.duration
@@ -168,10 +170,10 @@ def process_data(spark):
 
     # Write the data out to s3
     users.write.mode('overwrite').parquet(OUTPUT_DATA+'users/')
-    time.write.mode('overwrite').parquet(OUTPUT_DATA+'time/')
+    time.write.partitionBy("year","month").mode('overwrite').parquet(OUTPUT_DATA+'time/')
     artists.write.mode('overwrite').parquet(OUTPUT_DATA+'artists/')
-    songs.write.mode('overwrite').parquet(OUTPUT_DATA+'songs/')
-    songplays.write.mode('overwrite').parquet(OUTPUT_DATA+'songplays/')
+    songs.write.partitionBy("year","artist_id").mode('overwrite').parquet(OUTPUT_DATA+'songs/')
+    songplays.write.partitionBy("year","month").mode('overwrite').parquet(OUTPUT_DATA+'songplays/')
 
 def main():
 
