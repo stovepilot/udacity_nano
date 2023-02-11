@@ -1,3 +1,4 @@
+*.docx
 *.SAS
 *.ipynb_checkpoints
 *.log
@@ -9,3 +10,4 @@
 **/sample
 **/test_data
 **/__pycache__
+sas_data/
