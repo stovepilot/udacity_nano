@@ -50,6 +50,9 @@ Songs table files are partitioned by year and then artist. Time table files are 
 ## Project Repository files
 - `lakes_final.py` - Code to read Sparkify song data and log data from the data directory and and read it into a a postgres database
 
+## Running the code
+- Create an EMR cluster
+- Put the lakes_final.py and dl.cfg onto the cluster
+- Log into the cluster and run lakes.final `spark-submit lakes_final.py`
 
-
-
+For complete instructions please see [here](https://knowledge.udacity.com/questions/46619#552992) 
